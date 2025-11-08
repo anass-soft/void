@@ -491,26 +491,102 @@ $user_id = get_user_id();
         }
 
         function highlightCode(code) {
+            // Detect language and return object with highlighted code and language
+            let language = detectLanguage(code);
+            let highlighted = applySyntaxHighlighting(code);
+            return { code: highlighted, language: language };
+        }
+
+        function detectLanguage(code) {
+            // Check for language indicators in code
+            const firstLine = code.split('\n')[0].trim();
+            const languageMap = {
+                'php': 'PHP',
+                'javascript': 'JavaScript',
+                'js': 'JavaScript',
+                'css': 'CSS',
+                'html': 'HTML',
+                'sql': 'SQL',
+                'python': 'Python',
+                'py': 'Python',
+                'java': 'Java'
+            };
+
+            // Check for common language patterns
+            if (firstLine.includes('<?php') || code.includes('function') && code.includes('$')) {
+                return 'PHP';
+            }
+            if (code.includes('function') || code.includes('const') || code.includes('let ') || code.includes('var ')) {
+                return 'JavaScript';
+            }
+            if (code.includes('{') && code.includes('}') && code.includes(':') && !code.includes('$')) {
+                return 'CSS';
+            }
+            if (code.includes('<') && code.includes('>') && (code.includes('div') || code.includes('html'))) {
+                return 'HTML';
+            }
+            if (code.toUpperCase().includes('SELECT') || code.toUpperCase().includes('INSERT') || code.toUpperCase().includes('FROM')) {
+                return 'SQL';
+            }
+            if (code.includes('def ') || code.includes('import ') || code.includes('print(')) {
+                return 'Python';
+            }
+            if (code.includes('public class') || code.includes('import java')) {
+                return 'Java';
+            }
+
+            return 'Code';
+        }
+
+        function applySyntaxHighlighting(code) {
             // Simple regex-based syntax highlighting for PHP/JS-like code (VSCode dark theme inspired)
+            let highlighted = code;
+
             // Comments
-            code = code.replace(/\/\/(.*)$/gm, '<span class="hljs-comment">//$1</span>');
-            code = code.replace(/\/\*[\s\S]*?\*\//gm, '<span class="hljs-comment">$&</span>');
+            highlighted = highlighted.replace(/\/\/(.*)$/gm, '<span class="hljs-comment">//$1</span>');
+            highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//gm, '<span class="hljs-comment">$&</span>');
             // Strings
-            code = code.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'/gm, '<span class="hljs-string">$&</span>');
+            highlighted = highlighted.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'/gm, '<span class="hljs-string">$&</span>');
             // Keywords
-            const keywords = /\b(abstract|as|break|case|catch|class|const|continue|declare|default|do|echo|else|elseif|enddeclare|endforeach|endif|endswitch|endwhile|extends|final|finally|for|foreach|function|global|goto|if|implements|include|include_once|instanceof|insteadof|interface|namespace|new|private|protected|public|require|require_once|return|static|switch|throw|trait|try|use|var|while|yield|__CLASS__|__DIR__|__FILE__|__FUNCTION__|__LINE__|__METHOD__|__NAMESPACE__|__TRAIT__)\b/g;
-            code = code.replace(keywords, '<span class="hljs-keyword">$&</span>');
+            const keywords = /\b(abstract|as|break|case|catch|class|const|continue|declare|default|do|echo|else|elseif|enddeclare|endforeach|endif|endswitch|endwhile|extends|final|finally|for|foreach|function|global|goto|if|implements|include|include_once|instanceof|insteadof|interface|namespace|new|private|protected|public|require|require_once|return|static|switch|throw|trait|try|use|var|while|yield|__CLASS__|__DIR__|__FILE__|__FUNCTION__|__LINE__|__METHOD__|__NAMESPACE__|__TRAIT__|let|var|async|await|import|export|default|try|catch|finally|throw|new|this|super|class|extends|static|public|private|protected)\b/g;
+            highlighted = highlighted.replace(keywords, '<span class="hljs-keyword">$&</span>');
             // Functions
-            code = code.replace(/(\bfunction\s+)([\w$]+)\b/g, '$1<span class="hljs-function">$2</span>');
+            highlighted = highlighted.replace(/(\bfunction\s+)([\w$]+)\b/g, '$1<span class="hljs-function">$2</span>');
             // Variables
-            code = code.replace(/\$[\w]+/g, '<span class="hljs-variable">$&</span>');
+            highlighted = highlighted.replace(/\$[\w]+/g, '<span class="hljs-variable">$&</span>');
             // Numbers
-            code = code.replace(/\b\d+\b/g, '<span class="hljs-number">$&</span>');
+            highlighted = highlighted.replace(/\b\d+\b/g, '<span class="hljs-number">$&</span>');
             // Operators and punctuation
-            code = code.replace(/[+*-\/=<>!&|?:;{},.()[\]]/g, '<span class="hljs-operator">$&</span>');
+            highlighted = highlighted.replace(/[+*-\/=<>!&|?:;{},.()[\]]/g, '<span class="hljs-operator">$&</span>');
             // Tags like <?php ?>
-            code = code.replace(/&lt;\?php|\?&gt;/g, '<span class="hljs-tag">$&</span>');
-            return code;
+            highlighted = highlighted.replace(/&lt;\?php|\?&gt;/g, '<span class="hljs-tag">$&</span>');
+
+            return highlighted;
+        }
+
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const codeElement = codeBlock.querySelector('.highlighted-code');
+            const originalText = button.querySelector('.copy-text').textContent;
+            const originalIcon = button.querySelector('.copy-icon').textContent;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(codeElement.textContent).then(() => {
+                // Update button to copied state
+                button.querySelector('.copy-icon').textContent = '✓';
+                button.querySelector('.copy-text').textContent = 'Copied!';
+                button.classList.add('copied');
+
+                // Revert after 2 seconds
+                setTimeout(() => {
+                    button.querySelector('.copy-icon').textContent = originalIcon;
+                    button.querySelector('.copy-text').textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                // Keep original state if copy fails
+            });
         }
 
         function appendMessage(role, content, isLoading = false) {
