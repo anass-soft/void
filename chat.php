@@ -594,14 +594,25 @@ $user_id = get_user_id();
             div.className = 'message ' + role;
             if (isLoading) {
                 div.classList.add('loading');
-                div.innerHTML = 'AI is thinking...';
+                div.innerHTML = '✨ AI is thinking...';
             } else {
                 // Bold markdown
                 content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                // Code blocks with highlighting
+                // Code blocks with enhanced structure and copy functionality
                 content = content.replace(/```([\s\S]*?)```/g, (match, p1) => {
-                    const highlighted = highlightCode(p1.trim());
-                    return `<pre><code>${highlighted}</code></pre>`;
+                    const result = highlightCode(p1.trim());
+                    return `
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span class="code-language">${result.language}</span>
+                                <button class="copy-btn" onclick="copyCode(this)">
+                                    <span class="copy-icon">📋</span>
+                                    <span class="copy-text">Copy</span>
+                                </button>
+                            </div>
+                            <code class="highlighted-code">${result.code}</code>
+                        </div>
+                    `;
                 });
                 // Images
                 content = content.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
