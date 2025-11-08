@@ -633,6 +633,7 @@ $user_id = get_user_id();
                 body: JSON.stringify({ chat_id: currentChatId, content })
             });
             messageInput.value = '';
+            messageInput.style.height = 'auto';
 
             // Show loading indicator
             const loadingDiv = appendMessage('assistant', '', true);
