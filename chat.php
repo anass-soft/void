@@ -401,6 +401,7 @@ $user_id = get_user_id();
 </head>
 <body>
     <div id="sidebar">
+        <div class="logo">✨ AI Chat</div>
         <button id="new-chat-btn">New Chat</button>
         <button id="quote-btn">Show Quote</button>
         <button id="logout-btn" onclick="window.location.href='logout.php'">Logout</button>
@@ -409,7 +410,7 @@ $user_id = get_user_id();
     <div id="main">
         <div id="chat-area"></div>
         <div id="input-area">
-            <input id="message-input" placeholder="Type your message...">
+            <textarea id="message-input" placeholder="Type your message..." rows="1"></textarea>
             <button id="send-btn">Send</button>
         </div>
     </div>
