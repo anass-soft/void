@@ -725,8 +725,19 @@ $user_id = get_user_id();
 
         closeQuote.onclick = () => { quotePopup.style.display = 'none'; };
 
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
         sendBtn.onclick = sendMessage;
-        messageInput.onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
+        messageInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        };
         newChatBtn.onclick = createNewChat;
         quoteBtn.onclick = showQuote;
 
