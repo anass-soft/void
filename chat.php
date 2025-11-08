@@ -675,11 +675,22 @@ $user_id = get_user_id();
                                     const data = JSON.parse(jsonStr);
                                     const delta = data.choices?.[0]?.delta?.content || '';
                                     fullResponse += delta;
-                                    // Update the div with markdown applied (including highlighting for code)
+                                    // Update the div with markdown applied (including enhanced code blocks)
                                     let rendered = fullResponse.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                         .replace(/```([\s\S]*?)```/g, (match, p1) => {
-                                            const highlighted = highlightCode(p1.trim());
-                                            return `<pre><code>${highlighted}</code></pre>`;
+                                            const result = highlightCode(p1.trim());
+                                            return `
+                                                <div class="code-block">
+                                                    <div class="code-header">
+                                                        <span class="code-language">${result.language}</span>
+                                                        <button class="copy-btn" onclick="copyCode(this)">
+                                                            <span class="copy-icon">📋</span>
+                                                            <span class="copy-text">Copy</span>
+                                                        </button>
+                                                    </div>
+                                                    <code class="highlighted-code">${result.code}</code>
+                                                </div>
+                                            `;
                                         })
                                         .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
                                     loadingDiv.innerHTML = rendered;
