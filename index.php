@@ -81,12 +81,133 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot Login/Register</title>
     <style>
-        body { background: #121212; color: #e0e0e0; font-family: Arial, sans-serif; }
-        .container { max-width: 400px; margin: 100px auto; padding: 20px; background: #1e1e1e; border-radius: 8px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; background: #333; border: none; color: #e0e0e0; }
-        button { width: 100%; padding: 10px; background: #4caf50; border: none; color: white; cursor: pointer; }
-        .error { color: red; }
-        .toggle { text-align: center; margin-top: 10px; }
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            margin: 120px auto;
+            padding: 32px 24px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease-out;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            background: #1f1f1f;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input::placeholder {
+            color: #666;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            outline: none;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #ff4757;
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 14px;
+            padding: 8px;
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+        }
+
+        .toggle {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .toggle a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease-out;
+        }
+
+        .toggle a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 20px auto;
+                padding: 24px 20px;
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
