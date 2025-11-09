@@ -635,11 +635,17 @@ $user_id = get_user_id();
             messageInput.value = '';
             messageInput.style.height = 'auto';
 
-            // Show loading indicator
+            // Show loading indicator with thinking counter
             const loadingDiv = appendMessage('assistant', '', true);
+            let thinkingTime = 0;
+            let thinkingInterval = setInterval(() => {
+                thinkingTime += 0.1;
+                loadingDiv.innerHTML = `✨ AI is thinking... (${thinkingTime.toFixed(1)}s)`;
+            }, 100);
 
             // Stream AI response
             let fullResponse = '';
+            let firstTokenReceived = false;
             fetch('api_proxy.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
