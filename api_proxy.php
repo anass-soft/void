@@ -68,8 +68,15 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json'
 ]);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, false); // Stream directly
+curl_setopt($ch, CURLOPT_TIMEOUT, 60);           // 60 second timeout
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);    // 10 second connection timeout
+curl_setopt($ch, CURLOPT_TCP_NODELAY, true);     // Disable Nagle's algorithm for faster streaming
+curl_setopt($ch, CURLOPT_BUFFERSIZE, 128);       // Smaller buffer for faster chunk delivery
 curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($curl, $data) {
     echo $data;
+    if (ob_get_level() > 0) {
+        ob_flush();
+    }
     flush();
     return strlen($data);
 });
