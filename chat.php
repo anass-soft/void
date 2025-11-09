@@ -1204,154 +1204,15 @@ $user_id = get_user_id();
             updateStats();
         }
 
-        // Enhanced appendMessage with actions
-        const originalAppendMessage = appendMessage;
-        function appendMessage(role, content, isLoading = false) {
-            const div = originalAppendMessage(role, content, isLoading);
-
-            if (!isLoading && role === 'assistant') {
-                // Add message actions
-                const actions = document.createElement('div');
-                actions.className = 'message-actions';
-                actions.innerHTML = `
-                    <button class="action-btn" onclick="toggleBookmark(this.closest('.message'), this)" title="Bookmark">⭐</button>
-                    <button class="action-btn" onclick="copyMessage(this)" title="Copy">📋</button>
-                `;
-                div.appendChild(actions);
-            }
-
-            // Update stats
-            messageCount++;
-            totalTokens += estimateTokens(content);
-            updateStats();
-
-            return div;
-        }
-
         function copyMessage(button) {
             const message = button.closest('.message');
-            const text = message.textContent.replace(/^(AI: |User: )/, '').replace(/⭐📋/g, '').trim();
+            const text = message.textContent.replace(/^(✨ AI: |AI: |User: )/, '').replace(/⭐📋/g, '').trim();
             navigator.clipboard.writeText(text).then(() => {
                 const originalText = button.textContent;
                 button.textContent = '✓';
                 setTimeout(() => {
                     button.textContent = originalText;
                 }, 2000);
-            });
-        }
-
-        // Enhance sendMessage to track response time
-        const originalSendMessage = sendMessage;
-        function sendMessage() {
-            const startTime = Date.now();
-            startNeuralAnimation();
-
-            // Override original to track time
-            const content = messageInput.value.trim();
-            if (!content || !currentChatId) return;
-            appendMessage('user', content);
-            fetch('send_message.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: currentChatId, content })
-            });
-            messageInput.value = '';
-            messageInput.style.height = 'auto';
-
-            const loadingDiv = appendMessage('assistant', '', true);
-            let thinkingTime = 0;
-            let thinkingInterval = setInterval(() => {
-                thinkingTime += 0.1;
-                loadingDiv.innerHTML = `✨ AI is thinking... (${thinkingTime.toFixed(1)}s)`;
-            }, 100);
-
-            let fullResponse = '';
-            let firstTokenReceived = false;
-            fetch('api_proxy.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: currentChatId })
-            }).then(res => {
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                function read() {
-                    reader.read().then(({ done, value }) => {
-                        if (done) {
-                            clearInterval(thinkingInterval);
-                            stopNeuralAnimation();
-                            loadingDiv.classList.remove('loading');
-
-                            const responseTime = (Date.now() - startTime) / 1000;
-                            responseTimes.push(responseTime);
-                            updateStats();
-
-                            if (fullResponse.trim()) {
-                                fetch('send_message.php', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ chat_id: currentChatId, content: fullResponse, role: 'assistant' })
-                                });
-                            } else {
-                                loadingDiv.innerHTML = 'Error: No response received.';
-                            }
-                            return;
-                        }
-                        const chunk = decoder.decode(value);
-                        const lines = chunk.split('\n');
-                        lines.forEach(line => {
-                            if (line.startsWith('data: ')) {
-                                const jsonStr = line.slice(6).trim();
-                                if (jsonStr === '[DONE]') return;
-                                try {
-                                    const data = JSON.parse(jsonStr);
-                                    const delta = data.choices?.[0]?.delta?.content || '';
-                                    if (delta && !firstTokenReceived) {
-                                        clearInterval(thinkingInterval);
-                                        stopNeuralAnimation();
-                                        firstTokenReceived = true;
-                                    }
-                                    fullResponse += delta;
-                                    let rendered = fullResponse.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                        .replace(/```([\s\S]*?)```/g, (match, p1) => {
-                                            const result = highlightCode(p1.trim());
-                                            return `
-                                                <div class="code-block">
-                                                    <div class="code-header">
-                                                        <span class="code-language">${result.language}</span>
-                                                        <button class="copy-btn" onclick="copyCode(this)">
-                                                            <span class="copy-icon">📋</span>
-                                                            <span class="copy-text">Copy</span>
-                                                        </button>
-                                                    </div>
-                                                    <code class="highlighted-code">${result.code}</code>
-                                                </div>
-                                            `;
-                                        })
-                                        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-                                    loadingDiv.innerHTML = rendered;
-                                } catch (err) {
-                                    console.error('Parse error:', err);
-                                }
-                            }
-                        });
-                        chatArea.scrollTop = chatArea.scrollHeight;
-                        read();
-                    }).catch(err => {
-                        clearInterval(thinkingInterval);
-                        stopNeuralAnimation();
-                        console.error('Stream error:', err);
-                        loadingDiv.innerHTML = 'Error: ' + err.message;
-                    });
-                }
-                read();
-            }).catch(err => {
-                clearInterval(thinkingInterval);
-                stopNeuralAnimation();
-                console.error(err);
-                loadingDiv.innerHTML = 'Error: Network issue.';
             });
         }
 
