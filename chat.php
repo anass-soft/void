@@ -418,7 +418,38 @@ $user_id = get_user_id();
         <ul id="chat-list"></ul>
     </div>
     <div id="main">
+        <canvas id="neural-canvas"></canvas>
         <div id="chat-area"></div>
+        <div id="stats-panel" class="hidden">
+            <div class="stats-header">
+                <h3>📊 Conversation Stats</h3>
+                <button class="close-stats" onclick="toggleStats()">×</button>
+            </div>
+            <div class="stats-content">
+                <div class="stat-item">
+                    <span class="stat-label">Messages</span>
+                    <span class="stat-value" id="stat-messages">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Est. Tokens</span>
+                    <span class="stat-value" id="stat-tokens">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg Response Time</span>
+                    <span class="stat-value" id="stat-time">0.0s</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bookmarks</span>
+                    <span class="stat-value" id="stat-bookmarks">0</span>
+                </div>
+            </div>
+        </div>
+        <div id="floating-menu">
+            <button class="fab-btn" onclick="toggleStats()" title="Statistics">📊</button>
+            <button class="fab-btn" onclick="exportChat('markdown')" title="Export as Markdown">📄</button>
+            <button class="fab-btn" onclick="exportChat('json')" title="Export as JSON">💾</button>
+            <button class="fab-btn" onclick="toggleTheme()" title="Toggle Theme">🎨</button>
+        </div>
         <div id="input-area">
             <textarea id="message-input" placeholder="Type your message..." rows="1"></textarea>
             <button id="send-btn">Send</button>
