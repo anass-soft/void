@@ -259,6 +259,16 @@ $user_id = get_user_id();
             font-style: italic;
             color: #888;
             opacity: 0.7;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.9;
+            }
         }
 
         /* Input Area Modernization */
