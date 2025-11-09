@@ -683,6 +683,11 @@ $user_id = get_user_id();
                                 try {
                                     const data = JSON.parse(jsonStr);
                                     const delta = data.choices?.[0]?.delta?.content || '';
+                                    if (delta && !firstTokenReceived) {
+                                        // First token received, stop thinking counter
+                                        clearInterval(thinkingInterval);
+                                        firstTokenReceived = true;
+                                    }
                                     fullResponse += delta;
                                     // Update the div with markdown applied (including enhanced code blocks)
                                     let rendered = fullResponse.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
