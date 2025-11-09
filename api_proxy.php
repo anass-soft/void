@@ -46,11 +46,14 @@ if (empty($messages) || $messages[0]['role'] !== 'system') {
     array_unshift($messages, ['role' => 'system', 'content' => 'You are a helpful AI assistant.']);
 }
 
-// Prepare API request (streaming)
+// Prepare API request (streaming with optimized parameters)
 $api_data = [
     'model' => OPENROUTER_MODEL,
     'messages' => $messages,
-    'stream' => true
+    'stream' => true,
+    'temperature' => 0.7,  // More focused responses
+    'top_p' => 0.9,        // Nucleus sampling for faster generation
+    'max_tokens' => 2000   // Reasonable limit for faster responses
 ];
 
 header('Content-Type: text/event-stream');
@@ -65,8 +68,15 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json'
 ]);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, false); // Stream directly
+curl_setopt($ch, CURLOPT_TIMEOUT, 60);           // 60 second timeout
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);    // 10 second connection timeout
+curl_setopt($ch, CURLOPT_TCP_NODELAY, true);     // Disable Nagle's algorithm for faster streaming
+curl_setopt($ch, CURLOPT_BUFFERSIZE, 128);       // Smaller buffer for faster chunk delivery
 curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($curl, $data) {
     echo $data;
+    if (ob_get_level() > 0) {
+        ob_flush();
+    }
     flush();
     return strlen($data);
 });
