@@ -723,6 +723,7 @@ $user_id = get_user_id();
                 }
                 read();
             }).catch(err => {
+                clearInterval(thinkingInterval);
                 console.error(err);
                 loadingDiv.innerHTML = 'Error: Network issue.';
             });
