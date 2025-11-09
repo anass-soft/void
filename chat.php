@@ -884,6 +884,22 @@ $user_id = get_user_id();
                 // Images
                 content = content.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
                 div.innerHTML = content;
+
+                // Add message actions for assistant messages
+                if (role === 'assistant') {
+                    const actions = document.createElement('div');
+                    actions.className = 'message-actions';
+                    actions.innerHTML = `
+                        <button class="action-btn" onclick="toggleBookmark(this.closest('.message'), this)" title="Bookmark">⭐</button>
+                        <button class="action-btn" onclick="copyMessage(this)" title="Copy">📋</button>
+                    `;
+                    div.appendChild(actions);
+                }
+
+                // Update stats
+                messageCount++;
+                totalTokens += estimateTokens(content);
+                updateStats();
             }
             chatArea.appendChild(div);
             chatArea.scrollTop = chatArea.scrollHeight;
