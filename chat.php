@@ -659,6 +659,8 @@ $user_id = get_user_id();
                 function read() {
                     reader.read().then(({ done, value }) => {
                         if (done) {
+                            // Stop thinking counter
+                            clearInterval(thinkingInterval);
                             // Remove loading class and save if content exists
                             loadingDiv.classList.remove('loading');
                             if (fullResponse.trim()) {
