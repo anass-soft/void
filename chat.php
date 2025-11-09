@@ -120,6 +120,25 @@ $user_id = get_user_id();
             display: flex;
             flex-direction: column;
             background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Neural Network Canvas */
+        #neural-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        #neural-canvas.active {
+            opacity: 0.3;
         }
 
         #chat-area {
