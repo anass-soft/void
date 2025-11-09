@@ -716,6 +716,7 @@ $user_id = get_user_id();
                         chatArea.scrollTop = chatArea.scrollHeight;
                         read();
                     }).catch(err => {
+                        clearInterval(thinkingInterval);
                         console.error('Stream error:', err);
                         loadingDiv.innerHTML = 'Error: ' + err.message;
                     });
