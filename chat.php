@@ -464,6 +464,133 @@ $user_id = get_user_id();
             border-color: #667eea;
         }
 
+        /* Stats Panel */
+        #stats-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #stats-panel.hidden {
+            transform: translateX(350px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .stats-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-stats {
+            background: transparent;
+            border: none;
+            color: #e0e0e0;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            line-height: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .close-stats:hover {
+            color: #ff4757;
+            transform: rotate(90deg);
+        }
+
+        .stats-content {
+            padding: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* Floating Action Menu */
+        #floating-menu {
+            position: fixed;
+            bottom: 120px;
+            right: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 999;
+        }
+
+        .fab-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #e0e0e0;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab-btn:hover {
+            transform: scale(1.1) translateY(-4px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .fab-btn:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             #sidebar {
                 width: 100%;
@@ -479,6 +606,20 @@ $user_id = get_user_id();
             }
             #input-area {
                 padding: 16px 20px 20px 20px;
+            }
+            #stats-panel {
+                width: calc(100% - 40px);
+                right: 20px;
+                left: 20px;
+            }
+            #floating-menu {
+                bottom: 100px;
+                right: 20px;
+            }
+            .fab-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 18px;
             }
         }
         
