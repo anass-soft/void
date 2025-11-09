@@ -1024,6 +1024,341 @@ $user_id = get_user_id();
         newChatBtn.onclick = createNewChat;
         quoteBtn.onclick = showQuote;
 
+        // Stats tracking
+        let messageCount = 0;
+        let totalTokens = 0;
+        let responseTimes = [];
+        let bookmarkedMessages = new Set();
+
+        function updateStats() {
+            document.getElementById('stat-messages').textContent = messageCount;
+            document.getElementById('stat-tokens').textContent = totalTokens;
+            const avgTime = responseTimes.length > 0
+                ? (responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length).toFixed(1)
+                : '0.0';
+            document.getElementById('stat-time').textContent = avgTime + 's';
+            document.getElementById('stat-bookmarks').textContent = bookmarkedMessages.size;
+        }
+
+        function estimateTokens(text) {
+            return Math.ceil(text.split(/\s+/).length * 1.3);
+        }
+
+        function toggleStats() {
+            document.getElementById('stats-panel').classList.toggle('hidden');
+        }
+
+        // Neural Network Canvas Animation
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId = null;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        function createParticles() {
+            particles = [];
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    radius: Math.random() * 2 + 1
+                });
+            }
+        }
+
+        function animateNeuralNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw particles
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#667eea';
+                ctx.fill();
+            });
+
+            // Draw connections
+            particles.forEach((p1, i) => {
+                particles.slice(i + 1).forEach(p2 => {
+                    const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(102, 126, 234, ${1 - dist / 150})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            animationId = requestAnimationFrame(animateNeuralNetwork);
+        }
+
+        function startNeuralAnimation() {
+            canvas.classList.add('active');
+            if (!animationId) {
+                resizeCanvas();
+                createParticles();
+                animateNeuralNetwork();
+            }
+        }
+
+        function stopNeuralAnimation() {
+            canvas.classList.remove('active');
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (animationId) {
+                resizeCanvas();
+                createParticles();
+            }
+        });
+
+        // Export Functions
+        function exportChat(format) {
+            const messages = Array.from(document.querySelectorAll('.message'));
+            const chatData = messages.map(msg => {
+                const role = msg.classList.contains('user') ? 'User' : 'AI';
+                const content = msg.textContent.replace(/^(AI: |User: )/, '').trim();
+                return { role, content };
+            });
+
+            if (format === 'json') {
+                const json = JSON.stringify(chatData, null, 2);
+                downloadFile(json, 'chat-export.json', 'application/json');
+            } else if (format === 'markdown') {
+                let markdown = '# Chat Export\n\n';
+                markdown += `**Date:** ${new Date().toLocaleString()}\n\n`;
+                markdown += `**Total Messages:** ${chatData.length}\n\n---\n\n`;
+                chatData.forEach(msg => {
+                    markdown += `## ${msg.role}\n\n${msg.content}\n\n---\n\n`;
+                });
+                downloadFile(markdown, 'chat-export.md', 'text/markdown');
+            }
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Theme Toggle
+        let currentTheme = 'default';
+        function toggleTheme() {
+            const themes = {
+                'default': { bg: '#0a0a0a', accent: '#667eea', secondary: '#764ba2' },
+                'ocean': { bg: '#001f3f', accent: '#0074D9', secondary: '#7FDBFF' },
+                'forest': { bg: '#0d1b0d', accent: '#2ECC40', secondary: '#01FF70' },
+                'sunset': { bg: '#1a0a00', accent: '#FF4136', secondary: '#FF851B' }
+            };
+
+            const themeNames = Object.keys(themes);
+            const currentIndex = themeNames.indexOf(currentTheme);
+            currentTheme = themeNames[(currentIndex + 1) % themeNames.length];
+
+            const theme = themes[currentTheme];
+            document.documentElement.style.setProperty('--bg-color', theme.bg);
+            document.documentElement.style.setProperty('--accent-1', theme.accent);
+            document.documentElement.style.setProperty('--accent-2', theme.secondary);
+        }
+
+        // Message Actions
+        function toggleBookmark(messageElement, button) {
+            const messageId = messageElement.dataset.messageId || Date.now();
+            messageElement.dataset.messageId = messageId;
+
+            if (bookmarkedMessages.has(messageId)) {
+                bookmarkedMessages.delete(messageId);
+                button.classList.remove('bookmarked');
+                button.textContent = '⭐';
+            } else {
+                bookmarkedMessages.add(messageId);
+                button.classList.add('bookmarked');
+                button.textContent = '★';
+            }
+            updateStats();
+        }
+
+        // Enhanced appendMessage with actions
+        const originalAppendMessage = appendMessage;
+        function appendMessage(role, content, isLoading = false) {
+            const div = originalAppendMessage(role, content, isLoading);
+
+            if (!isLoading && role === 'assistant') {
+                // Add message actions
+                const actions = document.createElement('div');
+                actions.className = 'message-actions';
+                actions.innerHTML = `
+                    <button class="action-btn" onclick="toggleBookmark(this.closest('.message'), this)" title="Bookmark">⭐</button>
+                    <button class="action-btn" onclick="copyMessage(this)" title="Copy">📋</button>
+                `;
+                div.appendChild(actions);
+            }
+
+            // Update stats
+            messageCount++;
+            totalTokens += estimateTokens(content);
+            updateStats();
+
+            return div;
+        }
+
+        function copyMessage(button) {
+            const message = button.closest('.message');
+            const text = message.textContent.replace(/^(AI: |User: )/, '').replace(/⭐📋/g, '').trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✓';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Enhance sendMessage to track response time
+        const originalSendMessage = sendMessage;
+        function sendMessage() {
+            const startTime = Date.now();
+            startNeuralAnimation();
+
+            // Override original to track time
+            const content = messageInput.value.trim();
+            if (!content || !currentChatId) return;
+            appendMessage('user', content);
+            fetch('send_message.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: currentChatId, content })
+            });
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            const loadingDiv = appendMessage('assistant', '', true);
+            let thinkingTime = 0;
+            let thinkingInterval = setInterval(() => {
+                thinkingTime += 0.1;
+                loadingDiv.innerHTML = `✨ AI is thinking... (${thinkingTime.toFixed(1)}s)`;
+            }, 100);
+
+            let fullResponse = '';
+            let firstTokenReceived = false;
+            fetch('api_proxy.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: currentChatId })
+            }).then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                function read() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            clearInterval(thinkingInterval);
+                            stopNeuralAnimation();
+                            loadingDiv.classList.remove('loading');
+
+                            const responseTime = (Date.now() - startTime) / 1000;
+                            responseTimes.push(responseTime);
+                            updateStats();
+
+                            if (fullResponse.trim()) {
+                                fetch('send_message.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ chat_id: currentChatId, content: fullResponse, role: 'assistant' })
+                                });
+                            } else {
+                                loadingDiv.innerHTML = 'Error: No response received.';
+                            }
+                            return;
+                        }
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        lines.forEach(line => {
+                            if (line.startsWith('data: ')) {
+                                const jsonStr = line.slice(6).trim();
+                                if (jsonStr === '[DONE]') return;
+                                try {
+                                    const data = JSON.parse(jsonStr);
+                                    const delta = data.choices?.[0]?.delta?.content || '';
+                                    if (delta && !firstTokenReceived) {
+                                        clearInterval(thinkingInterval);
+                                        stopNeuralAnimation();
+                                        firstTokenReceived = true;
+                                    }
+                                    fullResponse += delta;
+                                    let rendered = fullResponse.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                        .replace(/```([\s\S]*?)```/g, (match, p1) => {
+                                            const result = highlightCode(p1.trim());
+                                            return `
+                                                <div class="code-block">
+                                                    <div class="code-header">
+                                                        <span class="code-language">${result.language}</span>
+                                                        <button class="copy-btn" onclick="copyCode(this)">
+                                                            <span class="copy-icon">📋</span>
+                                                            <span class="copy-text">Copy</span>
+                                                        </button>
+                                                    </div>
+                                                    <code class="highlighted-code">${result.code}</code>
+                                                </div>
+                                            `;
+                                        })
+                                        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+                                    loadingDiv.innerHTML = rendered;
+                                } catch (err) {
+                                    console.error('Parse error:', err);
+                                }
+                            }
+                        });
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                        read();
+                    }).catch(err => {
+                        clearInterval(thinkingInterval);
+                        stopNeuralAnimation();
+                        console.error('Stream error:', err);
+                        loadingDiv.innerHTML = 'Error: ' + err.message;
+                    });
+                }
+                read();
+            }).catch(err => {
+                clearInterval(thinkingInterval);
+                stopNeuralAnimation();
+                console.error(err);
+                loadingDiv.innerHTML = 'Error: Network issue.';
+            });
+        }
+
+        // Initialize
+        resizeCanvas();
+        updateStats();
+
         // Initial load
         loadChats();
     </script>
