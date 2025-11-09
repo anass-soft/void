@@ -147,6 +147,27 @@ $user_id = get_user_id();
             padding: 32px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        #chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-area::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        #chat-area::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+        }
+
+        #chat-area::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
 
         .message {
